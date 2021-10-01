@@ -151,6 +151,20 @@ public class FileUtility
         Pattern date_pattern = Pattern.compile("([2-9]\\d\\d\\d)([0-1]\\d)([0-3]\\d)");
         return getReportDateViaFileName(filename, date_pattern);
     }
+
+    public String get_reportDate_hyphenFormat(String filename)
+    {
+        String rptDate = getReportDate(filename);
+        return rptDate.substring(0, 4) + "-" + rptDate.substring(4, 6) + "-" + rptDate.substring(6, 8);
+    }
+
+    public String get_reportDate_asBeginningOfMonth(String rptDate)
+    {
+        int endIndex = 6;
+        if(rptDate.contains("-") || rptDate.contains("/"))
+            endIndex = 8;
+        return rptDate.substring(0, endIndex) + "01";
+    }
     
     public String getReportDate_NoDay(String filename)
     {
