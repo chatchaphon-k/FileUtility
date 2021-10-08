@@ -6,80 +6,33 @@ public class FileUtility
 {
     private String ext;
     private File dir;
-    private int totalFiles;
-    private File[] filesList;
+    private int total_files;
+    private File[] list_files;
     private File file;
     private String fileName;
     private String dirName;
-    private boolean isFoundFile;
-
-    // <editor-fold defaultstate="collapsed" desc="GETTER">
-
-    public String getExt()
-    {
-        return ext;
-    }
-
-    public File getDir()
-    {
-        return dir;
-    }
-
-    public String getDirName()
-    {
-        return dirName;
-    }
-
-    public int getTotalFiles()
-    {
-        return totalFiles;
-    }
-
-    public File[] getFilesList()
-    {
-        return filesList;
-    }
-    
-    public File getFile_i(int i)
-    {
-        return filesList[i];
-    }
-
-    public File getCurrFile()
-    {
-        return file;
-    }
-
-    public String getCurrFileName()
-    {
-        return fileName;
-    }
-
-    public String get_currFilename_noExt()
-    {
-        return fileName.substring(0, fileName.lastIndexOf("."));
-    }
-    
-    // </editor-fold>
+    private boolean is_file_found;
 
     public FileUtility(String dirName, String ext)
     {
         this.ext = ext;
         this.dirName = dirName;
-        setDir(dirName);
-        filesList = dir.listFiles();
-        totalFiles = filesList.length;
-        for(int i = 0; i < filesList.length; i++)
+        set_dir(dirName);
+        list_files = dir.listFiles();
+        total_files = list_files.length;
+        for(int i = 0; i < list_files.length; i++)
         {
-            if(filesList[i].isFile())
+            if(list_files[i].isFile())
             {
-                isFoundFile = true;
+                is_file_found = true;
                 break;
             }
         }
     }
 
-    public void setDir(String dirName)
+    // <editor-fold defaultstate="collapsed" desc="Setter">
+
+    public void set_dir(String dirName)
     {
         String sysPath = System.getProperty("user.dir");
         dir = new File(sysPath + "\\src");
@@ -100,7 +53,22 @@ public class FileUtility
         }
     }
 
-    public boolean isDirValidated()
+    public void set_curr_file(int i)
+    {
+        set_curr_file(list_files[i]);
+    }
+
+    public void set_curr_file(File currFile)
+    {
+        this.file = currFile;
+        this.fileName = currFile.getName();
+    }
+
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Boolean">
+
+    public boolean is_dir_validated()
     {
         if (!dir.exists())
         {
@@ -112,7 +80,7 @@ public class FileUtility
             System.err.println(dirName + " is not directory");
             return false;
         }
-        else if (totalFiles == 0 || !isFoundFile)
+        else if (total_files == 0 || !is_file_found)
         {
             System.err.println("Please put your \"" + ext + "\" file into folder \"" + dirName + "\"");
             return false;
@@ -120,25 +88,14 @@ public class FileUtility
 
         return true;
     }
-
-    public void setCurrFile(int i)
+    
+    public boolean is_file_validated(int i)
     {
-        setCurrFile(filesList[i]);
+        set_curr_file(list_files[i]);
+        return is_file_validated();
     }
-
-    public void setCurrFile(File currFile)
-    {
-        this.file = currFile;
-        this.fileName = currFile.getName();
-    }
-
-    public boolean isFileValidated(int i)
-    {
-        setCurrFile(filesList[i]);
-        return isFileValidated();
-    }
-
-    public boolean isFileValidated()
+    
+    public boolean is_file_validated()
     {
         if(file.isFile())
         {
@@ -151,19 +108,72 @@ public class FileUtility
         return false;
     }
 
-    public String getReportDate(String filename)
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Getter">
+
+    public String get_ext()
     {
-        Pattern date_pattern = Pattern.compile("([2-9]\\d\\d\\d)([0-1]\\d)([0-3]\\d)");
-        return getReportDateViaFileName(filename, date_pattern);
+        return ext;
     }
 
-    public String get_reportDate_hyphenFormat(String filename)
+    public File get_dir()
     {
-        String rptDate = getReportDate(filename);
+        return dir;
+    }
+
+    public String get_dirName()
+    {
+        return dirName;
+    }
+
+    public int get_total_files()
+    {
+        return total_files;
+    }
+
+    public File[] get_list_files()
+    {
+        return list_files;
+    }
+    
+    public File get_file_i(int i)
+    {
+        return list_files[i];
+    }
+
+    public File get_curr_file()
+    {
+        return file;
+    }
+
+    public String get_curr_fileName()
+    {
+        return fileName;
+    }
+
+    public String get_curr_fileName_noExt()
+    {
+        return fileName.substring(0, fileName.lastIndexOf("."));
+    }
+    
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Getter - date">
+
+    public String get_rptDate(String filename)
+    {
+        Pattern date_pattern = Pattern.compile("([2-9]\\d\\d\\d)([0-1]\\d)([0-3]\\d)");
+        return get_rptDate_viaFileName(filename, date_pattern);
+    }
+
+    public String get_rptDate_hyphenFormat(String filename)
+    {
+        String rptDate = get_rptDate(filename);
         return rptDate.substring(0, 4) + "-" + rptDate.substring(4, 6) + "-" + rptDate.substring(6, 8);
     }
 
-    public String get_reportDate_asBeginningOfMonth(String rptDate)
+    public String get_rptDate_asBeginningOfMonth(String rptDate)
     {
         int endIndex = 6;
         if(rptDate.contains("-") || rptDate.contains("/"))
@@ -171,39 +181,29 @@ public class FileUtility
         return rptDate.substring(0, endIndex) + "01";
     }
     
-    public String getReportDate_NoDay(String filename)
+    public String get_rptDate_noDay(String filename)
     {
         Pattern dateNoDay_pattern = Pattern.compile("([2-9]\\d\\d\\d)([0-1]\\d)");
-        return getReportDateViaFileName(filename, dateNoDay_pattern);
+        return get_rptDate_viaFileName(filename, dateNoDay_pattern);
     }
 
-    public String getReportDate_OnlyYear(String filename)
+    public String get_rptDate_yearOnly(String filename)
     {
         Pattern dateNoDay_pattern = Pattern.compile("([2-9]\\d\\d\\d)");
-        return getReportDateViaFileName(filename, dateNoDay_pattern);
+        return get_rptDate_viaFileName(filename, dateNoDay_pattern);
     }
 
-    public int getMonth_String2Int(String date)
+    public int get_month_string2int(String date)
     {
         return Integer.parseInt(date.substring(4, 6));
     }
 
-    public int getDay_String2Int(String date)
+    public int get_day_string2int(String date)
     {
         return Integer.parseInt(date.substring(6, date.length()));
     }
 
-    public boolean isMonthValidated(int month)
-    {
-        return (month > 0 && month <= 12) ? true : false;
-    }
-
-    public boolean isDayValidated(int day)
-    {
-        return (day > 0 && day <= 31) ? true : false;
-    }
-
-    public String getReportDateViaFileName(String fileName, Pattern pattern)
+    public String get_rptDate_viaFileName(String fileName, Pattern pattern)
     {
         Matcher matcher = pattern.matcher(fileName);
         if(matcher.find())
@@ -212,4 +212,20 @@ public class FileUtility
         System.out.println("No report date found on " + fileName);
         return "";
     }
+
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Boolean - date">
+    
+    public boolean is_month_validated(int month)
+    {
+        return (month > 0 && month <= 12) ? true : false;
+    }
+
+    public boolean is_day_validated(int day)
+    {
+        return (day > 0 && day <= 31) ? true : false;
+    }
+
+    // </editor-fold>
 }
