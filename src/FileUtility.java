@@ -54,6 +54,11 @@ public class FileUtility
     {
         return fileName;
     }
+
+    public String get_currFilename_noExt()
+    {
+        return fileName.substring(0, fileName.lastIndexOf("."));
+    }
     
     // </editor-fold>
 
