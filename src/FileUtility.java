@@ -7,24 +7,24 @@ public class FileUtility
     private String ext;
     private File dir;
     private int total_files;
-    private File[] list_files;
+    private File[] files;
     private File file;
-    private String fileName;
-    private String dirName;
-    private boolean is_file_found;
+    private String filename;
+    private String dir_name;
+    private boolean is_found_file;
 
-    public FileUtility(String dirName, String ext)
+    public FileUtility(String dir_name, String ext)
     {
         this.ext = ext;
-        this.dirName = dirName;
-        set_dir(dirName);
-        list_files = dir.listFiles();
-        total_files = list_files.length;
-        for(int i = 0; i < list_files.length; i++)
+        this.dir_name = dir_name;
+        set_dir(dir_name);
+        files = dir.listFiles();
+        total_files = files.length;
+        for(int i = 0; i < files.length; i++)
         {
-            if(list_files[i].isFile())
+            if(files[i].isFile())
             {
-                is_file_found = true;
+                is_found_file = true;
                 break;
             }
         }
@@ -32,14 +32,14 @@ public class FileUtility
 
     // <editor-fold defaultstate="collapsed" desc="Setter">
 
-    public void set_dir(String dirName)
+    public void set_dir(String dir_name)
     {
         String sysPath = System.getProperty("user.dir");
         dir = new File(sysPath + "\\src");
         if(dir.exists())
-            init_dir(dir.getAbsolutePath() + "\\" + dirName);   //For Netbeans env
+            init_dir(dir.getAbsolutePath() + "\\" + dir_name);   //For Netbeans env
         else
-            init_dir(sysPath + "\\" + dirName); //For built project env
+            init_dir(sysPath + "\\" + dir_name); //For built project env
     }
 
     private void init_dir(String path)
@@ -49,19 +49,19 @@ public class FileUtility
         {
             boolean isMkDir = dir.mkdir();
             if (isMkDir)
-                System.out.println("NEW FOLDER CREATED: " + dirName);
+                System.out.println("NEW FOLDER CREATED: " + dir_name);
         }
     }
 
     public void set_curr_file(int i)
     {
-        set_curr_file(list_files[i]);
+        set_curr_file(files[i]);
     }
 
-    public void set_curr_file(File currFile)
+    public void set_curr_file(File curr_file)
     {
-        this.file = currFile;
-        this.fileName = currFile.getName();
+        this.file = curr_file;
+        this.filename = curr_file.getName();
     }
 
     // </editor-fold>
@@ -72,17 +72,17 @@ public class FileUtility
     {
         if (!dir.exists())
         {
-            System.err.println("Please create folder name \"" + dirName + "\" and put \"" + ext + "\" files in there");
+            System.err.println("Please create folder name \"" + dir_name + "\" and put \"" + ext + "\" files in there");
             return false;
         }
         else if(!dir.isDirectory())
         {
-            System.err.println(dirName + " is not directory");
+            System.err.println(dir_name + " is not directory");
             return false;
         }
-        else if (total_files == 0 || !is_file_found)
+        else if (total_files == 0 || !is_found_file)
         {
-            System.err.println("Please put your \"" + ext + "\" file into folder \"" + dirName + "\"");
+            System.err.println("Please put your \"" + ext + "\" file into folder \"" + dir_name + "\"");
             return false;
         }
 
@@ -91,7 +91,7 @@ public class FileUtility
     
     public boolean is_file_validated(int i)
     {
-        set_curr_file(list_files[i]);
+        set_curr_file(files[i]);
         return is_file_validated();
     }
     
@@ -99,9 +99,9 @@ public class FileUtility
     {
         if(file.isFile())
         {
-            if(fileName.toLowerCase().endsWith(ext))
+            if(filename.toLowerCase().endsWith(ext))
                 return true;
-            System.err.println("REJECTED: " + fileName);
+            System.err.println("REJECTED: " + filename);
             System.err.println("\tFile extension must be a \"" + ext + "\"");
         }
 
@@ -124,7 +124,7 @@ public class FileUtility
 
     public String get_dirName()
     {
-        return dirName;
+        return dir_name;
     }
 
     public int get_total_files()
@@ -134,12 +134,12 @@ public class FileUtility
 
     public File[] get_list_files()
     {
-        return list_files;
+        return files;
     }
     
     public File get_file_i(int i)
     {
-        return list_files[i];
+        return files[i];
     }
 
     public File get_curr_file()
@@ -149,12 +149,12 @@ public class FileUtility
 
     public String get_curr_fileName()
     {
-        return fileName;
+        return filename;
     }
 
     public String get_curr_fileName_noExt()
     {
-        return fileName.substring(0, fileName.lastIndexOf("."));
+        return filename.substring(0, filename.lastIndexOf("."));
     }
     
     // </editor-fold>
@@ -173,12 +173,12 @@ public class FileUtility
         return rptDate.substring(0, 4) + "-" + rptDate.substring(4, 6) + "-" + rptDate.substring(6, 8);
     }
 
-    public String get_rptDate_asBeginningOfMonth(String rptDate)
+    public String get_rptDate_asBeginningOfMonth(String rpt_date)
     {
         int endIndex = 6;
-        if(rptDate.contains("-") || rptDate.contains("/"))
+        if(rpt_date.contains("-") || rpt_date.contains("/"))
             endIndex = 8;
-        return rptDate.substring(0, endIndex) + "01";
+        return rpt_date.substring(0, endIndex) + "01";
     }
     
     public String get_rptDate_noDay(String filename)
