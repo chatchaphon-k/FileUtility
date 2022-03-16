@@ -1,9 +1,12 @@
+package extensions;
+
 import java.io.File;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class FileUtility
 {
+    private final String[] exts;
+    private final String[] dirs_name;
+    
     private String ext;
     private File dir;
     private int total_files;
@@ -11,24 +14,58 @@ public class FileUtility
     private File file;
     private String filename;
     private String dir_name;
-    private boolean is_found_file;
 
     public FileUtility(String dir_name, String ext)
     {
-        this.ext = ext;
-        this.dir_name = dir_name;
-        set_dir(dir_name);
-        files = dir.listFiles();
-        total_files = files.length;
-        for(int i = 0; i < files.length; i++)
+        this.dirs_name = new String[] { dir_name };
+        this.exts = new String[] { ext };
+    }
+
+    public FileUtility(String[] dirs_name, String[] exts)
+    {
+        this.dirs_name = dirs_name;
+        this.exts = exts;
+    }
+
+    public void process_dir2file()
+    {
+        String filename_noExt = "";
+        String filename_toLowerCase = "";
+        String filename_toLowerCase_noExt = "";
+
+        for(int dirs_name_i = 0; dirs_name_i < dirs_name.length; dirs_name_i++)
         {
-            if(files[i].isFile())
+            dir_name = dirs_name[dirs_name_i];
+            set_dir(dir_name);
+            files = dir.listFiles();
+            total_files = files.length;
+
+            if (is_dir_validated())
             {
-                is_found_file = true;
-                break;
+                process_pre_perDir(dirs_name_i, dir_name);
+
+                for (int file_i = 0; file_i < total_files; file_i++)
+                {
+                    if (is_file_validated(file_i, exts[dirs_name_i]))
+                    {
+                        filename_noExt = filename.replaceAll(exts[dirs_name_i], "");
+                        filename_toLowerCase = filename.toLowerCase();
+                        filename_toLowerCase_noExt = filename_toLowerCase.replaceAll(exts[dirs_name_i], "");
+
+                        if (filename_toLowerCase.endsWith(exts[dirs_name_i]))
+                            process_files_perDir(filename, filename_noExt, filename_toLowerCase_noExt, file, dirs_name_i);
+                    }
+                }
+
+                process_post_perDir(dirs_name_i, dir_name);
             }
         }
     }
+
+    protected void process_pre_perDir(int dirs_name_i, String dir_name){}
+    protected void process_files_perDir(String filename, String filename_noExt, String filename_toLowerCase_noExt, File file, int dirs_name_i){}
+    protected void process_post_perDir(int dirs_name_i, String dir_name){}
+    protected void show_list_req_dataInput(String dir_name){}
 
     // <editor-fold defaultstate="collapsed" desc="Setter">
 
@@ -72,37 +109,41 @@ public class FileUtility
     {
         if (!dir.exists())
         {
-            System.err.println("Please create folder name \"" + dir_name + "\" and put \"" + ext + "\" files in there");
+            System.out.println("Please create folder name \"" + dir_name + "\" and put \"" + ext + "\" files in there");
             return false;
         }
         else if(!dir.isDirectory())
         {
-            System.err.println(dir_name + " is not directory");
+            System.out.println(dir_name + " is not directory");
             return false;
         }
-        else if (total_files == 0 || !is_found_file)
+        else if (total_files == 0)
         {
-            System.err.println("Please put your \"" + ext + "\" file into folder \"" + dir_name + "\"");
+            System.out.println("The folder \"" + dir_name + "\" is empty, please put the file...");
+            show_list_req_dataInput(dir_name);
             return false;
         }
 
         return true;
     }
-    
-    public boolean is_file_validated(int i)
+
+    public boolean is_file_validated(int i, String ext)
     {
         set_curr_file(files[i]);
-        return is_file_validated();
+        return is_file_validated(ext);
     }
     
-    public boolean is_file_validated()
+    public boolean is_file_validated(String ext)
     {
         if(file.isFile())
         {
             if(filename.toLowerCase().endsWith(ext))
                 return true;
-            System.err.println("REJECTED: " + filename);
-            System.err.println("\tFile extension must be a \"" + ext + "\"");
+            System.out.println("REJECTED the file with unsupported extension, \"" + ext + "\" is required : " + filename);
+        }
+        else
+        {
+            System.out.println("REJECTED the non-file : " + filename);
         }
 
         return false;
@@ -112,120 +153,15 @@ public class FileUtility
 
     // <editor-fold defaultstate="collapsed" desc="Getter">
 
-    public String get_ext()
-    {
-        return ext;
-    }
-
-    public File get_dir()
-    {
-        return dir;
-    }
-
-    public String get_dirName()
-    {
-        return dir_name;
-    }
-
-    public int get_total_files()
-    {
-        return total_files;
-    }
-
-    public File[] get_list_files()
-    {
-        return files;
-    }
-    
-    public File get_file_i(int i)
-    {
-        return files[i];
-    }
-
-    public File get_curr_file()
-    {
-        return file;
-    }
-
-    public String get_curr_fileName()
-    {
-        return filename;
-    }
-
-    public String get_curr_fileName_noExt()
-    {
-        return filename.substring(0, filename.lastIndexOf("."));
-    }
-    
-    // </editor-fold>
-
-    // <editor-fold defaultstate="collapsed" desc="Getter - date">
-
-    public String get_rptDate(String filename)
-    {
-        Pattern date_pattern = Pattern.compile("([2-9]\\d\\d\\d)([0-1]\\d)([0-3]\\d)");
-        return get_rptDate_viaFileName(filename, date_pattern);
-    }
-
-    public String get_rptDate_hyphenFormat(String filename)
-    {
-        String rptDate = get_rptDate(filename);
-        return rptDate.substring(0, 4) + "-" + rptDate.substring(4, 6) + "-" + rptDate.substring(6, 8);
-    }
-
-    public String get_rptDate_asBeginningOfMonth(String rpt_date)
-    {
-        int endIndex = 6;
-        if(rpt_date.contains("-") || rpt_date.contains("/"))
-            endIndex = 8;
-        return rpt_date.substring(0, endIndex) + "01";
-    }
-    
-    public String get_rptDate_noDay(String filename)
-    {
-        Pattern dateNoDay_pattern = Pattern.compile("([2-9]\\d\\d\\d)([0-1]\\d)");
-        return get_rptDate_viaFileName(filename, dateNoDay_pattern);
-    }
-
-    public String get_rptDate_yearOnly(String filename)
-    {
-        Pattern dateNoDay_pattern = Pattern.compile("([2-9]\\d\\d\\d)");
-        return get_rptDate_viaFileName(filename, dateNoDay_pattern);
-    }
-
-    public int get_month_string2int(String date)
-    {
-        return Integer.parseInt(date.substring(4, 6));
-    }
-
-    public int get_day_string2int(String date)
-    {
-        return Integer.parseInt(date.substring(6, date.length()));
-    }
-
-    public String get_rptDate_viaFileName(String fileName, Pattern pattern)
-    {
-        Matcher matcher = pattern.matcher(fileName);
-        if(matcher.find())
-            return matcher.group();
-
-        System.out.println("No report date found on " + fileName);
-        return "";
-    }
-
-    // </editor-fold>
-
-    // <editor-fold defaultstate="collapsed" desc="Boolean - date">
-    
-    public boolean is_month_validated(int month)
-    {
-        return (month > 0 && month <= 12) ? true : false;
-    }
-
-    public boolean is_day_validated(int day)
-    {
-        return (day > 0 && day <= 31) ? true : false;
-    }
+    public String get_ext()                 { return ext; }
+    public File get_dir()                   { return dir; }
+    public String get_dirName()             { return dir_name; }
+    public int get_total_files()            { return total_files; }
+    public File[] get_list_files()          { return files; }    
+    public File get_file_i(int i)           { return files[i]; }
+    public File get_curr_file()             { return file; }
+    public String get_curr_fileName()       { return filename; }
+    public String get_curr_fileName_noExt() { return filename.substring(0, filename.lastIndexOf(".")); }
 
     // </editor-fold>
 }
